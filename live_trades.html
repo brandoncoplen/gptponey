@@ -20,9 +20,7 @@
                 const response = await fetch(`https://clob.polymarket.com/trades?marketId=${marketId}`);
                 const trades = await response.json();
 
-                const filteredTrades = trades
-                    .filter(trade => trade.price > priceThreshold)
-                    .slice(0, 10);
+                const filteredTrades = trades.filter(trade => trade.price > priceThreshold).slice(0, 10);
 
                 tradesContainer.innerHTML = '';
                 filteredTrades.forEach(trade => {
