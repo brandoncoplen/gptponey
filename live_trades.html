@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Polymarket Trades</title>
+    <script>
+        async function fetchTrades() {
+            const marketUrl = document.getElementById('market').value;
+            const priceThreshold = parseFloat(document.getElementById('price').value);
+            const tradesContainer = document.getElementById('trades');
+            tradesContainer.innerHTML = 'Loading...';
+
+            try {
+                const marketId = marketUrl.split('#')[1];
+                if (!marketId) {
+                    throw new Error('Invalid market URL. Please include the market ID in the URL.');
+                }
+
+                const response = await fetch(`https://clob.polymarket.com/trades?marketId=${marketId}`);
+                const trades = await response.json();
+
+                const filteredTrades = trades
+                    .filter(trade => trade.price > priceThreshold)
+                    .slice(0, 10);
+
+                tradesContainer.innerHTML = '';
+                filteredTrades.forEach(trade => {
+                    const tradeElement = document.createElement('div');
+                    tradeElement.textContent = `Price: $${trade.price}, Quantity: ${trade.quantity}, Timestamp: ${new Date(trade.timestamp).toLocaleString()}`;
+                    tradesContainer.appendChild(tradeElement);
+                });
+
+                if (filteredTrades.length === 0) {
+                    tradesContainer.textContent = 'No trades found above the given price.';
+                }
+            } catch (error) {
+                console.error('Error fetching trades:', error);
+                tradesContainer.textContent = 'Failed to fetch trades. ' + error.message;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const updateButton = document.getElementById('update-button');
+            updateButton.addEventListener('click', fetchTrades);
+        });
+    </script>
+</head>
+<body>
+    <h1>Live Polymarket Trades</h1>
+    <label for="market">Enter Market URL:</label>
+    <input type="text" id="market" placeholder="Enter Polymarket URL">
+    <br>
+    <label for="price">Enter Price Threshold ($):</label>
+    <input type="number" id="price" step="0.01">
+    <br>
+    <button id="update-button">Update</button>
+    <h2>Recent Trades:</h2>
+    <div id="trades">No trades to display.</div>
+</body>
+</html>
